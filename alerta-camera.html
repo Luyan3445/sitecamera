@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alerta: esse site pediu sua câmera</title>
+<style>
+  :root{
+    --bg:#10233a; --panel:#17314f; --ink:#f3f6fa; --muted:#b4c3d6;
+    --alert:#ffc233; --ok:#4cd39a; --bad:#ff6b5e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif; line-height:1.55;
+    display:flex; justify-content:center; padding:24px 16px;
+  }
+  main{width:100%; max-width:640px}
+  h1{font-size:clamp(1.8rem,6vw,2.6rem); line-height:1.1; margin:.2em 0 .4em}
+  p{margin:.6em 0; color:var(--muted)}
+  .card{background:var(--panel); border-radius:14px; padding:22px; margin:18px 0}
+  button{
+    font:inherit; font-weight:700; cursor:pointer; border:0; border-radius:10px;
+    padding:14px 22px; background:var(--alert); color:#1a1a1a;
+  }
+  button:focus-visible{outline:3px solid #fff; outline-offset:3px}
+  video{width:100%; border-radius:12px; background:#000; display:none; transform:scaleX(-1)}
+  .alert{display:none; border-left:6px solid var(--bad)}
+  .alert h2{margin:0 0 .3em; color:var(--bad)}
+  ul{padding-left:1.2em; color:var(--ink)}
+  li{margin:.5em 0}
+  .safe{border-left:6px solid var(--ok)}
+  .safe strong{color:var(--ok)}
+  small{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Clique em “Permitir” para continuar</h1>
+  <p>Para liberar o conteúdo, precisamos verificar que você é uma pessoa de verdade.</p>
+
+  <div class="card">
+    <video id="v" autoplay playsinline muted></video>
+    <button id="go" type="button">Continuar</button>
+    <p id="status" aria-live="polite"></p>
+  </div>
+
+  <div id="alerta" class="card alert" role="alert">
+    <h2>Você acabou de ser testado</h2>
+    <p style="color:var(--ink)">Esta é uma demonstração em sala de aula. Sites falsos usam frases como “verifique que você é humano” para convencer você a liberar a câmera.</p>
+    <ul>
+      <li>Site confiável só pede a câmera quando você vai usá-la (videochamada, foto).</li>
+      <li>Se o pedido aparecer logo ao abrir uma página, clique em <b>Bloquear</b>.</li>
+      <li>Desconfie de links recebidos por WhatsApp, e-mail ou prêmios e promoções.</li>
+      <li>Você pode rever as permissões no cadeado ao lado do endereço do site.</li>
+    </ul>
+    <p class="safe card" style="margin-bottom:0"><strong>Nesta página nada é gravado nem enviado.</strong> A imagem fica só no seu aparelho e a câmera é desligada agora.</p>
+  </div>
+
+  <small>Material educativo de segurança digital.</small>
+</main>
+
+<script>
+  const btn = document.getElementById('go');
+  const video = document.getElementById('v');
+  const status = document.getElementById('status');
+  const alerta = document.getElementById('alerta');
+
+  function mostrarAlerta(){
+    alerta.style.display = 'block';
+    btn.style.display = 'none';
+    alerta.scrollIntoView({behavior:'smooth'});
+  }
+
+  btn.addEventListener('click', async () => {
+    status.textContent = '';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' } });
+      video.srcObject = stream;
+      video.style.display = 'block';
+      // Mostra a câmera por 3 segundos e desliga: nada é gravado ou enviado.
+      setTimeout(() => {
+        stream.getTracks().forEach(t => t.stop());
+        video.style.display = 'none';
+        mostrarAlerta();
+      }, 3000);
+    } catch (e) {
+      status.textContent = 'Você bloqueou a câmera. Foi a melhor escolha!';
+      mostrarAlerta();
+    }
+  });
+</script>
+</body>
+</html>
